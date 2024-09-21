@@ -4,6 +4,7 @@ import { createMock } from '@golevelup/ts-jest';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, User } from '@prisma/client';
+import { testUser } from './user.test.contsants';
 
 describe('UserService', () => {
   let service: UserService;
@@ -26,16 +27,15 @@ describe('UserService', () => {
   });
 
   it('should return user', async () => {
-    const user: User = { id: 1, email: 'test', name: 'test' };
-    prisma.user.findUnique = jest.fn().mockResolvedValue(user);
+    prisma.user.findUnique = jest.fn().mockResolvedValue(testUser);
 
-    expect(await service.getUser({ id: 1 })).toBe(user);
+    expect(await service.getUser({ id: 1 })).toBe(testUser);
   });
 
   it('should return all users', async () => {
     const users: User[] = [
-      { id: 1, email: 'test1', name: 'test1' },
-      { id: 2, email: 'test2', name: 'test2' },
+      { ...testUser, id: 1 },
+      { ...testUser, id: 2 },
     ];
     prisma.user.findMany = jest.fn().mockResolvedValue(users);
 
@@ -43,10 +43,7 @@ describe('UserService', () => {
   });
 
   it('should create user', async () => {
-    const data: Prisma.UserCreateInput = {
-      email: 'test',
-      name: 'test',
-    };
+    const data: Prisma.UserCreateInput = { ...testUser };
     prisma.user.create = jest.fn();
 
     await service.createUser(data);
@@ -58,6 +55,7 @@ describe('UserService', () => {
     const data: Prisma.UserUpdateInput = {
       email: 'test',
       name: 'test',
+      password: '123',
     };
     const where: Prisma.UserWhereUniqueInput = { id: 1 };
     prisma.user.update = jest.fn();

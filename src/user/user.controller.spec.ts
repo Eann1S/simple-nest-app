@@ -3,6 +3,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { createMock } from '@golevelup/ts-jest';
 import { Prisma, User } from '@prisma/client';
+import { testUser } from './user.test.contsants';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -25,33 +26,27 @@ describe('UserController', () => {
   });
 
   it('should return user', async () => {
-    const user: User = { id: 1, email: 'test', name: 'test' };
-    service.getUser = jest.fn().mockResolvedValue(user);
+    service.getUser = jest.fn().mockResolvedValue(testUser);
 
-    expect(await controller.getUser('1')).toBe(user);
+    expect(await controller.getUser('1')).toBe(testUser);
   });
 
   it('should return users', async () => {
     const users: User[] = [
-      { id: 1, email: 'test1', name: 'test1' },
-      { id: 2, email: 'test2', name: 'test2' },
+      { ...testUser, id: 1 },
+      { ...testUser, id: 2 },
     ];
     service.getUsers = jest.fn().mockResolvedValue(users);
 
     expect(await controller.getUsers()).toBe(users);
   });
 
-  it('should create user', async () => {
-    const data: Prisma.UserCreateInput = { email: 'test', name: 'test' };
-    service.createUser = jest.fn();
-
-    controller.createUser(data);
-
-    expect(service.createUser).toHaveBeenCalledWith(data);
-  });
-
   it('should update user', async () => {
-    const data: Prisma.UserCreateInput = { email: 'test', name: 'test' };
+    const data: Prisma.UserUpdateInput = {
+      email: 'test',
+      name: 'test',
+      password: '123',
+    };
     service.updateUser = jest.fn();
 
     controller.updateUser('1', data);

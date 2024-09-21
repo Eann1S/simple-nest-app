@@ -1,13 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { UserService } from './user.service';
+import { Prisma } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
@@ -23,15 +16,10 @@ export class UserController {
     return this.userService.getUsers({});
   }
 
-  @Post()
-  async createUser(@Body() userData: { name?: string; email: string }) {
-    return this.userService.createUser(userData);
-  }
-
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
-    @Body() userData: { name?: string; email?: string },
+    @Body() userData: Prisma.UserUpdateInput,
   ) {
     return this.userService.updateUser({
       where: { id: +id },
