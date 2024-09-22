@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { createMock } from '@golevelup/ts-jest';
 import { AuthService } from './auth.service';
-import { RegisterDto, SignInDto } from './dtos';
+import { RegisterDto, JwtDto } from './auth.dtos';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -37,12 +37,14 @@ describe('AuthController', () => {
     expect(service.register).toHaveBeenCalledWith({ ...registerDto });
   });
 
-  it('should sign in', async () => {
-    const signInDto: SignInDto = { email: 'test', password: '12345' };
-    service.signIn = jest.fn().mockResolvedValue(true);
+  it('should login', async () => {
+    const user = { email: 'test', password: '12345' };
+    const jwtDto: JwtDto = { access_token: 'token' };
+    service.login = jest.fn().mockResolvedValue(jwtDto);
 
-    const actual = await controller.signIn(signInDto);
+    const res = await controller.login({ user });
 
-    expect(actual).toBe(true);
+    expect(service.login).toHaveBeenCalledWith(user);
+    expect(res).toBe(jwtDto);
   });
 });

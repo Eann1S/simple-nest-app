@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { JwtDto, RegisterDto, SignInDto } from './dtos';
+import { JwtDto, RegisterDto } from './auth.dtos';
 import { createMock } from '@golevelup/ts-jest';
 import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { User } from '@prisma/client';
-import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
 
 const testUser: User = {
   id: 1,
@@ -50,23 +50,29 @@ describe('AuthService', () => {
     });
   });
 
-  it('should signIn when password is valid', async () => {
-    const signInDto: SignInDto = { ...testUser, password: '12345' };
+  it('should return user when credentials are valid', async () => {
     userService.getUser = jest.fn().mockResolvedValue(testUser);
-    jwtService.signAsync = jest.fn().mockResolvedValue('token');
 
-    const actual: JwtDto = await authService.signIn(signInDto);
+    const res = await authService.validateCredentials(testUser.email, '12345');
 
     expect(userService.getUser).toHaveBeenCalledWith({ email: testUser.email });
-    expect(actual).toHaveProperty('access_token', 'token');
+    const { password: _, ...expectedRes } = testUser;
+    expect(res).toEqual(expectedRes);
   });
 
-  it("shouldn't signIn when password is invalid", async () => {
-    const signInDto: SignInDto = { ...testUser, password: 'invalid' };
+  it('should throw exception when credentials are invalid', async () => {
     userService.getUser = jest.fn().mockResolvedValue(testUser);
 
-    await expect(() => authService.signIn(signInDto)).rejects.toThrow(
-      UnauthorizedException,
-    );
+    expect(() =>
+      authService.validateCredentials(testUser.email, 'invalid'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should login', async () => {
+    jwtService.signAsync = jest.fn().mockResolvedValue('token');
+
+    const res: JwtDto = await authService.login(testUser);
+
+    expect(res).toHaveProperty('access_token', 'token');
   });
 });

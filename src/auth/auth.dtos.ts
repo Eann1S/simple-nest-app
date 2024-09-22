@@ -4,11 +4,6 @@ export type RegisterDto = {
   name?: string;
 };
 
-export type SignInDto = {
-  email: string;
-  password: string;
-};
-
 export type JwtDto = {
   access_token: string;
 };
