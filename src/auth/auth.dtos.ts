@@ -7,3 +7,9 @@ export type RegisterDto = {
 export type JwtDto = {
   access_token: string;
 };
+
+export type UserDto = {
+  id: number;
+  email: string;
+  name?: string;
+};

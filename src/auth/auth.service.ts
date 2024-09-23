@@ -3,7 +3,7 @@ import { UserService } from '../user/user.service';
 import * as bcrpyt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { saltRounds } from './auth.constants';
-import { RegisterDto, JwtDto } from './auth.dtos';
+import { RegisterDto, JwtDto, UserDto } from './auth.dtos';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +12,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateCredentials(email: string, password: string) {
+  async validateCredentials(email: string, password: string): Promise<UserDto> {
     const user = await this.userService.getUser({ email });
     const isPasswordValid = await bcrpyt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -22,18 +22,22 @@ export class AuthService {
     return result;
   }
 
-  async register(registerDto: RegisterDto): Promise<any> {
+  async register(registerDto: RegisterDto): Promise<UserDto> {
     const hashedPassword = await this.hashPassword(registerDto.password);
-    this.userService.createUser({ ...registerDto, password: hashedPassword });
+    const user = await this.userService.createUser({
+      ...registerDto,
+      password: hashedPassword,
+    });
+    return user;
   }
 
-  async login(user): Promise<JwtDto> {
+  async login(user: UserDto): Promise<JwtDto> {
     const payload = { sub: user.id, ...user };
     const accessToken = await this.jwtService.signAsync(payload);
     return { access_token: accessToken };
   }
 
-  private hashPassword(password: string) {
+  private hashPassword(password: string): Promise<string> {
     return bcrpyt.hash(password, saltRounds);
   }
 }
